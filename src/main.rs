@@ -1,11 +1,13 @@
+mod vec3;
+use vec3::Vec3;
+
 use std::io::{stderr, Write};
 
 fn main() {
-
     // Image
 
-    let image_width : usize = 256;
-    let image_height : usize = 256;
+    let image_width: usize = 256;
+    let image_height: usize = 256;
 
     // Render
 
