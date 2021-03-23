@@ -2,6 +2,7 @@ mod vec3;
 use vec3::Color;
 
 mod color;
+mod ray;
 
 use std::io::{stderr, Write};
 
