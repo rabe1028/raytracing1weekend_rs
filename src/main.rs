@@ -9,14 +9,14 @@ use std::io::{stderr, Write};
 
 fn hit_sphere(center: &Point3, radius: f64, r: &Ray) -> f64 {
     let oc = r.origin() - center;
-    let a = Vec3::dot(r.direction(), r.direction());
-    let b = 2.0 * oc.dot(r.direction());
+    let a = r.direction().norm();
+    let half_b = oc.dot(r.direction());
     let c = oc.dot(&oc) - radius * radius;
-    let discriminant = b * b - 4. * a * c;
+    let discriminant = half_b.powi(2) - a * c;
     if (discriminant < 0.) {
         -1.0
     } else {
-        (-b - discriminant.sqrt()) / (2.0 * a)
+        (-half_b - discriminant.sqrt()) / a
     }
 }
 

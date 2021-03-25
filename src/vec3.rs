@@ -15,7 +15,11 @@ impl Vec3 {
         Vec3 { x: x, y: y, z: z }
     }
     pub fn length(&self) -> f64 {
-        (self.x.powi(2) + self.y.powi(2) + self.z.powi(2)).sqrt()
+        self.norm().sqrt()
+    }
+
+    pub fn norm(&self) -> f64 {
+        self.x.powi(2) + self.y.powi(2) + self.z.powi(2)
     }
 
     pub fn dot(&self, other: &Vec3) -> f64 {
