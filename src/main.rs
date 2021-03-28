@@ -19,6 +19,8 @@ use camera::Camera;
 use std::io::{stderr, Write};
 
 use rand::Rng;
+use rayon::prelude::*;
+use std::sync::Arc;
 
 fn ray_color(r: &Ray, world: &impl Hittable) -> Color {
     if let Some(rec) = world.hit(r, 0., f64::INFINITY) {
@@ -43,32 +45,42 @@ fn main() {
         .push(Sphere::new(Point3::new(0., 0., -1.), 0.5))
         .push(Sphere::new(Point3::new(0., -100.5, -1.), 100.));
 
+    let world = Arc::new(world);
+
     // Camera
 
     let cam = Camera::new();
 
-    let mut rng = rand::thread_rng();
+    let cam = Arc::new(cam);
 
     // Render
 
     println!("P3\n{} {}\n255", image_width, image_height);
 
-    for j in (0..image_height).rev() {
+    let pixel_colors : Vec<Color> = (0..image_height).into_par_iter().rev().map(move |j| {
         eprint!("\rScanlines remaining: {} ", j);
         stderr().flush().unwrap();
 
-        for i in 0..image_width {
-            let pixel_color = (0..sample_per_pixel).fold(Color::new(0., 0., 0.), |acc, _| {
+        let world = world.clone();
+        let cam = cam.clone();
+
+        (0..image_width).into_par_iter().map(move |i| {
+            let mut rng = rand::thread_rng();
+
+            let world = world.clone();
+            let cam = cam.clone();
+
+            (0..sample_per_pixel).fold(Color::new(0., 0., 0.), |acc, _| {
                 let u = (i as f64 + rng.gen::<f64>()) / (image_width as f64 - 1.);
                 let v = (j as f64 + rng.gen::<f64>()) / (image_height as f64 - 1.);
 
                 let r = cam.get_ray(u, v);
-                acc + ray_color(&r, &world)
-            }) / sample_per_pixel as f64;
+                acc + ray_color(&r, world.as_ref())
+            }) / sample_per_pixel as f64
+        })
+    }).flatten().collect();
 
-            println!("{}", pixel_color);
-        }
-    }
+    pixel_colors.iter().for_each(|pixel_color| {println!("{}", pixel_color);});
 
     eprintln!("\nDone.");
 }

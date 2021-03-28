@@ -2,7 +2,7 @@ use crate::hittable::*;
 use crate::Ray;
 
 pub struct HittableList {
-    objects: Vec<Box<dyn Hittable>>,
+    objects: Vec<Box<dyn Hittable + Sync + Send + 'static>>,
 }
 
 impl HittableList {
@@ -12,7 +12,7 @@ impl HittableList {
         }
     }
 
-    pub fn push(mut self, object: impl Hittable + 'static) -> Self {
+    pub fn push(mut self, object: impl Hittable + Sync + Send + 'static) -> Self {
         let object = Box::new(object);
         self.objects.push(object);
         self
