@@ -5,31 +5,24 @@ mod color;
 mod ray;
 use ray::Ray;
 
+mod hittable;
+use hittable::Hittable;
+mod sphere;
+use sphere::Sphere;
+
+mod hittable_list;
+use hittable_list::HittableList;
+
 use std::io::{stderr, Write};
 
-fn hit_sphere(center: &Point3, radius: f64, r: &Ray) -> f64 {
-    let oc = r.origin() - center;
-    let a = r.direction().norm();
-    let half_b = oc.dot(r.direction());
-    let c = oc.dot(&oc) - radius * radius;
-    let discriminant = half_b.powi(2) - a * c;
-    if (discriminant < 0.) {
-        -1.0
+fn ray_color(r: &Ray, world: &impl Hittable) -> Color {
+    if let Some(rec) = world.hit(r, 0., f64::INFINITY) {
+        0.5 * (rec.normal + Color::new(1., 1., 1.))
     } else {
-        (-half_b - discriminant.sqrt()) / a
+        let unit_direction = r.direction().clone().normalize();
+        let t = 0.5 * (unit_direction.y + 1.0);
+        (1. - t) * Color::new(1., 1., 1.) + t * Color::new(0.5, 0.7, 1.)
     }
-}
-
-fn ray_color(r: &Ray) -> Color {
-
-    let t = hit_sphere(&Point3::new(0., 0., -1.0), 0.5, r);
-    if t > 0. {
-        let n = (r.at(t) - Vec3::new(0., 0., -1.)).normalize();
-        return 0.5 * (n + Vec3::new(1., 1., 1.));
-    }
-    let unit_direction = r.direction().clone().normalize();
-    let t = 0.5 * (unit_direction.y + 1.0);
-    (1. - t) * Color::new(1., 1., 1.) + t * Color::new(0.5, 0.7, 1.)
 }
 
 fn main() {
@@ -38,6 +31,11 @@ fn main() {
     let aspect_ratio = 16.0 / 9.0;
     let image_width: usize = 400;
     let image_height: usize = (image_width as f64 / aspect_ratio) as usize;
+
+    // World
+    let world = HittableList::new()
+        .push(Sphere::new(Point3::new(0., 0., -1.), 0.5))
+        .push(Sphere::new(Point3::new(0., -100.5, -1.), 100.));
 
     // Camera
 
@@ -68,7 +66,7 @@ fn main() {
                 &lower_left_corner + u * &horizontal + v * &vertical - &origin,
             );
 
-            let pixel_color = ray_color(&r);
+            let pixel_color = ray_color(&r, &world);
 
             println!("{}", pixel_color);
         }
