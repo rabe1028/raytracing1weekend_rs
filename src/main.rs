@@ -13,7 +13,12 @@ use sphere::Sphere;
 mod hittable_list;
 use hittable_list::HittableList;
 
+mod camera;
+use camera::Camera;
+
 use std::io::{stderr, Write};
+
+use rand::Rng;
 
 fn ray_color(r: &Ray, world: &impl Hittable) -> Color {
     if let Some(rec) = world.hit(r, 0., f64::INFINITY) {
@@ -31,6 +36,7 @@ fn main() {
     let aspect_ratio = 16.0 / 9.0;
     let image_width: usize = 400;
     let image_height: usize = (image_width as f64 / aspect_ratio) as usize;
+    let sample_per_pixel = 100;
 
     // World
     let world = HittableList::new()
@@ -39,15 +45,9 @@ fn main() {
 
     // Camera
 
-    let viewport_height = 2.0;
-    let viewport_width = aspect_ratio * viewport_height;
-    let focal_length = 1.0;
+    let cam = Camera::new();
 
-    let origin = Point3::new(0., 0., 0.);
-    let horizontal = Vec3::new(viewport_width, 0., 0.);
-    let vertical = Vec3::new(0., viewport_height, 0.);
-    let lower_left_corner =
-        &origin - &horizontal / 2. - &vertical / 2. - Vec3::new(0., 0., focal_length);
+    let mut rng = rand::thread_rng();
 
     // Render
 
@@ -58,15 +58,13 @@ fn main() {
         stderr().flush().unwrap();
 
         for i in 0..image_width {
-            let u = i as f64 / (image_width as f64 - 1.);
-            let v = j as f64 / (image_height as f64 - 1.);
+            let pixel_color = (0..sample_per_pixel).fold(Color::new(0., 0., 0.), |acc, _| {
+                let u = (i as f64 + rng.gen::<f64>()) / (image_width as f64 - 1.);
+                let v = (j as f64 + rng.gen::<f64>()) / (image_height as f64 - 1.);
 
-            let r = Ray::new(
-                origin.clone(),
-                &lower_left_corner + u * &horizontal + v * &vertical - &origin,
-            );
-
-            let pixel_color = ray_color(&r, &world);
+                let r = cam.get_ray(u, v);
+                acc + ray_color(&r, &world)
+            }) / sample_per_pixel as f64;
 
             println!("{}", pixel_color);
         }
