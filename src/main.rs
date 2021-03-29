@@ -22,9 +22,13 @@ use rand::Rng;
 use rayon::prelude::*;
 use std::sync::Arc;
 
-fn ray_color(r: &Ray, world: &impl Hittable) -> Color {
-    if let Some(rec) = world.hit(r, 0., f64::INFINITY) {
-        0.5 * (rec.normal + Color::new(1., 1., 1.))
+fn ray_color(r: &Ray, world: &impl Hittable, rng: &mut impl rand::Rng, depth: u64) -> Color {
+    if depth == 0 {
+        return Color::new(0., 0., 0.);
+    }
+    if let Some(rec) = world.hit(r, 0.001, f64::INFINITY) {
+        let target = &(rec.p) + &(rec.normal)+ Vec3::random_in_unit_sphere(rng).normalize();
+        0.5 * ray_color(&Ray::new(rec.p.clone(), target - rec.p), world, rng, depth - 1)
     } else {
         let unit_direction = r.direction().clone().normalize();
         let t = 0.5 * (unit_direction.y + 1.0);
@@ -39,6 +43,7 @@ fn main() {
     let image_width: usize = 400;
     let image_height: usize = (image_width as f64 / aspect_ratio) as usize;
     let sample_per_pixel = 100;
+    let max_depth = 50;
 
     // World
     let world = HittableList::new()
@@ -75,7 +80,7 @@ fn main() {
                 let v = (j as f64 + rng.gen::<f64>()) / (image_height as f64 - 1.);
 
                 let r = cam.get_ray(u, v);
-                acc + ray_color(&r, world.as_ref())
+                acc + ray_color(&r, world.as_ref(), &mut rng, max_depth)
             }) / sample_per_pixel as f64
         })
     }).flatten().collect();

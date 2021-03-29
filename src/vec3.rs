@@ -38,6 +38,23 @@ impl Vec3 {
         let len = self.length();
         self / len
     }
+
+    pub fn vec3_random_range(rng: &mut impl rand::Rng, range: std::ops::Range<f64>) -> Vec3 {
+        Vec3::new(
+            rng.gen_range(range.clone()),
+            rng.gen_range(range.clone()),
+            rng.gen_range(range),
+        )
+    }
+
+    pub fn random_in_unit_sphere(rng: &mut impl rand::Rng) -> Vec3 {
+        loop {
+            let p = Vec3::vec3_random_range(rng, -1.0..1.0);
+            if p.norm() < 1.0 {
+                return p;
+            }
+        }
+    }
 }
 
 impl AddAssign<&Vec3> for Vec3 {
