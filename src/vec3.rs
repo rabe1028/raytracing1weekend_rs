@@ -55,6 +55,15 @@ impl Vec3 {
             }
         }
     }
+
+    pub fn random_in_hemisphere(&self, rng: &mut impl rand::Rng) -> Self {
+        let in_unit_sphere = Vec3::random_in_unit_sphere(rng);
+        if self.dot(&in_unit_sphere) > 0. {
+            in_unit_sphere
+        } else {
+            -in_unit_sphere
+        }
+    }
 }
 
 impl AddAssign<&Vec3> for Vec3 {

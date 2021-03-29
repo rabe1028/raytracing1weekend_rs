@@ -27,7 +27,7 @@ fn ray_color(r: &Ray, world: &impl Hittable, rng: &mut impl rand::Rng, depth: u6
         return Color::new(0., 0., 0.);
     }
     if let Some(rec) = world.hit(r, 0.001, f64::INFINITY) {
-        let target = &(rec.p) + &(rec.normal)+ Vec3::random_in_unit_sphere(rng).normalize();
+        let target = &(rec.p) + &(rec.normal).random_in_hemisphere(rng);
         0.5 * ray_color(&Ray::new(rec.p.clone(), target - rec.p), world, rng, depth - 1)
     } else {
         let unit_direction = r.direction().clone().normalize();
