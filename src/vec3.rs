@@ -64,6 +64,15 @@ impl Vec3 {
             -in_unit_sphere
         }
     }
+
+    pub fn random_unit_vector(rng: &mut impl rand::Rng) -> Self {
+        Self::random_in_unit_sphere(rng).normalize()
+    }
+
+    pub fn near_zero(&self) -> bool {
+        const S : f64 = 1e-8;
+        (self.x.abs() < S) && (self.y.abs() < S) && (self.z.abs() < S)
+    }
 }
 
 impl AddAssign<&Vec3> for Vec3 {
