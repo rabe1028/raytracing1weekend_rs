@@ -64,9 +64,9 @@ fn main() {
     let material_center: Arc<Box<dyn Material + Sync + Send + 'static>> =
         Arc::new(Box::new(Lambertian::new(Color::new(0.7, 0.3, 0.3))));
     let material_left: Arc<Box<dyn Material + Sync + Send + 'static>> =
-        Arc::new(Box::new(Metal::new(Color::new(0.8, 0.8, 0.8))));
+        Arc::new(Box::new(Metal::new(Color::new(0.8, 0.8, 0.8), 0.3)));
     let material_right: Arc<Box<dyn Material + Sync + Send + 'static>> =
-        Arc::new(Box::new(Metal::new(Color::new(0.8, 0.6, 0.2))));
+        Arc::new(Box::new(Metal::new(Color::new(0.8, 0.6, 0.2), 1.0)));
 
     // World
     let world = HittableList::new()

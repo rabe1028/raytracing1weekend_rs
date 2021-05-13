@@ -1,8 +1,11 @@
+use rand::Rng;
+
+use crate::hittable::HitRecord;
 use crate::Color;
 use crate::Ray;
-use crate::hittable::HitRecord;
 
 pub trait Material {
+    // dynamic objectで管理する関係上、&mut implを受け取れないので、rand関係を利用する場合は、method内で作成すること
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)>;
 }
 

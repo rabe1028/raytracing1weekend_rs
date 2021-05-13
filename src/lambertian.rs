@@ -1,10 +1,8 @@
-
-
-use crate::Vec3;
 use crate::hittable::HitRecord;
-use crate::Ray;
-use crate::Color;
 use crate::material::Material;
+use crate::Color;
+use crate::Ray;
+use crate::Vec3;
 
 pub struct Lambertian {
     albedo: Color,
@@ -12,7 +10,7 @@ pub struct Lambertian {
 
 impl Lambertian {
     pub fn new(albedo: Color) -> Self {
-        Self {albedo}
+        Self { albedo }
     }
 }
 
@@ -24,7 +22,7 @@ impl Material for Lambertian {
         if (scatter_direction.near_zero()) {
             scatter_direction = rec.normal.clone();
         }
-        
+
         let scattered = Ray::new(rec.p.clone(), scatter_direction);
         let attenuation = self.albedo.clone();
 
