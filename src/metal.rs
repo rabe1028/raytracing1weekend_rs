@@ -6,9 +6,7 @@ use crate::Color;
 use crate::Ray;
 use crate::Vec3;
 
-fn reflect(v: &Vec3, normal: &Vec3) -> Vec3 {
-    v - 2. * v.dot(normal) * normal
-}
+use crate::ray::reflect;
 
 pub struct Metal {
     albedo: Color,

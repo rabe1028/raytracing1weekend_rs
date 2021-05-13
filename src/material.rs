@@ -1,5 +1,3 @@
-
-
 use crate::hittable::HitRecord;
 use crate::Color;
 use crate::Ray;
