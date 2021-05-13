@@ -1,4 +1,4 @@
-use rand::Rng;
+
 
 use crate::hittable::HitRecord;
 use crate::Color;
@@ -11,7 +11,7 @@ pub trait Material {
 
 pub struct UninitMaterial {}
 impl Material for UninitMaterial {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
+    fn scatter(&self, _r_in: &Ray, _rec: &HitRecord) -> Option<(Color, Ray)> {
         None
     }
 }
