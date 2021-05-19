@@ -9,17 +9,26 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new() -> Self {
-        let aspect_ratio = 16.0 / 9.0;
-        let viewport_height = 2.0;
+    pub fn new(
+        lookfrom: Point3,
+        lookat: Point3,
+        viewup: Vec3,
+        vertical_fov: f64,
+        aspect_ratio: f64,
+    ) -> Self {
+        let theta = crate::util::degrees_to_radians(vertical_fov);
+        let h = (theta / 2.0).tan();
+        let viewport_height = 2.0 * h;
         let viewport_width = aspect_ratio * viewport_height;
-        let focal_length = 1.0;
 
-        let origin = Point3::new(0., 0., 0.);
-        let horizontal = Vec3::new(viewport_width, 0., 0.);
-        let vertical = Vec3::new(0., viewport_height, 0.);
-        let lower_left_corner =
-            &origin - &horizontal / 2. - &vertical / 2. - Vec3::new(0., 0., focal_length);
+        let w = (&lookfrom - &lookat).normalize();
+        let u = viewup.cross(&w).normalize();
+        let v = w.cross(&u);
+
+        let origin = lookfrom;
+        let horizontal = viewport_width * u;
+        let vertical = viewport_height * v;
+        let lower_left_corner = &origin - &horizontal / 2. - &vertical / 2. - w;
 
         Camera {
             origin,

@@ -28,6 +28,8 @@ use metal::Metal;
 mod dielectrics;
 use dielectrics::Dielectrics;
 
+mod util;
+
 use std::io::{stderr, Write};
 
 use rand::Rng;
@@ -62,6 +64,8 @@ fn main() {
     let sample_per_pixel = 100;
     let max_depth = 50;
 
+    // World
+
     let material_ground: Arc<Box<dyn Material + Sync + Send + 'static>> =
         Arc::new(Box::new(Lambertian::new(Color::new(0.8, 0.8, 0.0))));
     let material_center: Arc<Box<dyn Material + Sync + Send + 'static>> =
@@ -71,23 +75,26 @@ fn main() {
     let material_right: Arc<Box<dyn Material + Sync + Send + 'static>> =
         Arc::new(Box::new(Metal::new(Color::new(0.8, 0.6, 0.2), 0.0)));
 
-    // World
     let world = HittableList::new()
         .push(Sphere::new(
-            Point3::new(0., -100.5, -1.),
-            100.,
+            Point3::new(0.0, -100.5, -1.0),
+            100.0,
             material_ground,
         ))
-        .push(Sphere::new(Point3::new(0., 0., -1.), 0.5, material_center))
+        .push(Sphere::new(
+            Point3::new(0.0, 0.0, -1.0),
+            0.5,
+            material_center,
+        ))
         .push(Sphere::new(
             Point3::new(-1.0, 0.0, -1.0),
             0.5,
             material_left.clone(),
-        ))        
+        ))
         .push(Sphere::new(
             Point3::new(-1.0, 0.0, -1.0),
-            -0.4,
-            material_left,
+            -0.45,
+            material_left.clone(),
         ))
         .push(Sphere::new(
             Point3::new(1.0, 0.0, -1.0),
@@ -99,7 +106,13 @@ fn main() {
 
     // Camera
 
-    let cam = Camera::new();
+    let cam = Camera::new(
+        Point3::new(-2.0, 2.0, 1.0),
+        Point3::new(0.0, 0.0, -1.0),
+        Point3::new(0.0, 1.0, 0.0),
+        20.0,
+        aspect_ratio,
+    );
 
     let cam = Arc::new(cam);
 
