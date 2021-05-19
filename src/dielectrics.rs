@@ -38,8 +38,9 @@ impl Material for Dielectrics {
 
         let mut rng = rand::thread_rng();
 
-        let direction = if refraction_ratio * sin_theta > 1.0 || 
-        reflectance(cos_theta, refraction_ratio) > rng.gen_range(0.0..1.0) {
+        let direction = if refraction_ratio * sin_theta > 1.0
+            || reflectance(cos_theta, refraction_ratio) > rng.gen_range(0.0..1.0)
+        {
             // Reflect
             reflect(&unit_direction, &rec.normal)
         } else {
