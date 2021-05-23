@@ -19,6 +19,8 @@ impl Vec3 {
     }
 
     pub fn norm(&self) -> f64 {
+        // TODO : ノルムじゃないので、名前を変える
+        // 自己内積なので、意味が違う
         self.x.powi(2) + self.y.powi(2) + self.z.powi(2)
     }
 
@@ -67,6 +69,15 @@ impl Vec3 {
 
     pub fn random_unit_vector(rng: &mut impl rand::Rng) -> Self {
         Self::random_in_unit_sphere(rng).normalize()
+    }
+
+    pub fn random_in_unit_disk(rng: &mut impl rand::Rng) -> Self {
+        loop {
+            let p = Vec3::new(rng.gen_range(0.0..1.0), rng.gen_range(0.0..1.0), 0.0);
+            if p.norm() < 1.0 {
+                return p;
+            }
+        }
     }
 
     pub fn near_zero(&self) -> bool {

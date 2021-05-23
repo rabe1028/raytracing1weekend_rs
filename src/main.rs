@@ -106,12 +106,20 @@ fn main() {
 
     // Camera
 
+    let lookfrom = Point3::new(3.0, 3.0, 2.0);
+    let lookat = Point3::new(0.0, 0.0, -1.0);
+    let viewup = Point3::new(0.0, 1.0, 0.0);
+    let dist_to_focus = (&lookfrom - &lookat).length();
+    let aperture = 2.;
+
     let cam = Camera::new(
-        Point3::new(-2.0, 2.0, 1.0),
-        Point3::new(0.0, 0.0, -1.0),
-        Point3::new(0.0, 1.0, 0.0),
+        lookfrom,
+        lookat,
+        viewup,
         20.0,
         aspect_ratio,
+        aperture,
+        dist_to_focus,
     );
 
     let cam = Arc::new(cam);
