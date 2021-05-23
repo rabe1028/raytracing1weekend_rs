@@ -55,62 +55,82 @@ fn ray_color(r: &Ray, world: &impl Hittable, rng: &mut impl rand::Rng, depth: u6
     }
 }
 
+fn random_scene() -> HittableList {
+    let world = HittableList::new();
+
+    let ground_material: Arc<Box<dyn Material + Sync + Send + 'static>> =
+        Arc::new(Box::new(Lambertian::new(Color::new(0.5, 0.5, 0.5))));
+
+    let world = world.push(Sphere::new(
+        Point3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        ground_material,
+    ));
+
+    let world = (-11..11).zip(-11..11).fold(world, |world, (a, b)| {
+        let mut rng = rand::thread_rng();
+        let choose_mat = rng.gen_range(0.0..1.0);
+        let center = Point3::new(
+            a as f64 + 0.9 * rng.gen_range(0.0..1.0),
+            0.2,
+            b as f64 + 0.9 * rng.gen_range(0.0..1.0),
+        );
+
+        if (&center - Point3::new(4.0, 0.2, 0.0)).length() > 0.9 {
+            let sphere_material: Box<dyn Material + Sync + Send + 'static> = if choose_mat < 0.8 {
+                // diffuse
+                let albedo = Color::vec3_random_range(&mut rng, 0.0..1.0);
+                Box::new(Lambertian::new(albedo))
+            } else if choose_mat < 0.95 {
+                // metal
+                let albedo = Color::vec3_random_range(&mut rng, 0.0..0.5);
+                let fuzz = rng.gen_range(0.0..0.5);
+                Box::new(Metal::new(albedo, fuzz))
+            } else {
+                // glass
+                Box::new(Dielectrics::new(1.0))
+            };
+            world.push(Sphere::new(center, 0.2, Arc::new(sphere_material)))
+        } else {
+            world
+        }
+    });
+
+    let material1: Arc<Box<dyn Material + Sync + Send + 'static>> =
+        Arc::new(Box::new(Dielectrics::new(1.5)));
+
+    let material2: Arc<Box<dyn Material + Sync + Send + 'static>> =
+        Arc::new(Box::new(Lambertian::new(Color::new(0.4, 0.2, 0.1))));
+
+    let material3: Arc<Box<dyn Material + Sync + Send + 'static>> =
+        Arc::new(Box::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0)));
+
+    world
+        .push(Sphere::new(Point3::new(0.0, 1.0, 0.0), 1.0, material1))
+        .push(Sphere::new(Point3::new(-4.0, 1.0, 0.0), 1.0, material2))
+        .push(Sphere::new(Point3::new(4.0, 1.0, 0.0), 1.0, material3))
+}
+
 fn main() {
     // Image
 
-    let aspect_ratio = 16.0 / 9.0;
-    let image_width: usize = 400;
+    let aspect_ratio = 3.0 / 2.0;
+    let image_width: usize = 1200;
     let image_height: usize = (image_width as f64 / aspect_ratio) as usize;
-    let sample_per_pixel = 100;
+    let sample_per_pixel = 500;
     let max_depth = 50;
 
     // World
 
-    let material_ground: Arc<Box<dyn Material + Sync + Send + 'static>> =
-        Arc::new(Box::new(Lambertian::new(Color::new(0.8, 0.8, 0.0))));
-    let material_center: Arc<Box<dyn Material + Sync + Send + 'static>> =
-        Arc::new(Box::new(Lambertian::new(Color::new(0.1, 0.2, 0.5))));
-    let material_left: Arc<Box<dyn Material + Sync + Send + 'static>> =
-        Arc::new(Box::new(Dielectrics::new(1.5)));
-    let material_right: Arc<Box<dyn Material + Sync + Send + 'static>> =
-        Arc::new(Box::new(Metal::new(Color::new(0.8, 0.6, 0.2), 0.0)));
-
-    let world = HittableList::new()
-        .push(Sphere::new(
-            Point3::new(0.0, -100.5, -1.0),
-            100.0,
-            material_ground,
-        ))
-        .push(Sphere::new(
-            Point3::new(0.0, 0.0, -1.0),
-            0.5,
-            material_center,
-        ))
-        .push(Sphere::new(
-            Point3::new(-1.0, 0.0, -1.0),
-            0.5,
-            material_left.clone(),
-        ))
-        .push(Sphere::new(
-            Point3::new(-1.0, 0.0, -1.0),
-            -0.45,
-            material_left.clone(),
-        ))
-        .push(Sphere::new(
-            Point3::new(1.0, 0.0, -1.0),
-            0.5,
-            material_right,
-        ));
-
-    let world = Arc::new(world);
+    let world = Arc::new(random_scene());
 
     // Camera
 
-    let lookfrom = Point3::new(3.0, 3.0, 2.0);
-    let lookat = Point3::new(0.0, 0.0, -1.0);
+    let lookfrom = Point3::new(13.0, 2.0, 3.0);
+    let lookat = Point3::new(0.0, 0.0, 0.0);
     let viewup = Point3::new(0.0, 1.0, 0.0);
-    let dist_to_focus = (&lookfrom - &lookat).length();
-    let aperture = 2.;
+    let dist_to_focus = 10.0;
+    let aperture = 0.1;
 
     let cam = Camera::new(
         lookfrom,
